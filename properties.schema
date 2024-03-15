@@ -1,0 +1,35 @@
+{
+  "type": "object",
+  "$schema": "http://json-schema.org/draft-04/schema",
+  "id": "http://jsonschema.net",
+  "required": false,
+  "properties": {
+    "pluginLocations": {
+      "type": "object",
+      "required": true,
+      "properties": {
+        "contentobject": {
+          "type": "object",
+          "properties": {
+            "_aichat": {
+                "type": "object",
+                "required": true,
+                "legend": "AI Chat",
+                "properties": {
+                    "_isEnabled": {
+                        "type": "boolean",
+                        "required": true,
+                        "title": "Enable AI Chat",
+                        "help": "Enable access to the AI Chatbot on this contentObject",
+                        "inputType" : "Checkbox",
+                        "default": true,
+                        "validators": ["required"]
+                    }
+                }
+            }
+          }
+        }
+      }
+    }
+  }
+}

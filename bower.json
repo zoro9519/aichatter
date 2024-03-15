@@ -1,0 +1,21 @@
+{
+    "name": "adapt-odi-aichat",
+    "version": "0.0.2",
+    "framework": ">=5.0",
+    "homepage": "https://github.com/theodi/adapt-odi-aichat",
+    "authors": [
+      "David Tarrant <davetaz@theodi.org>"
+    ],
+    "displayName": "AI Chat Popup",
+    "extension": "aichat",
+    "description": "An extension to provide a chat box popup, also requires adapt-odi-openai",
+    "main": "/js/index.js",
+    "keywords": [
+      "adapt-plugin",
+      "adapt-extension",
+      "conversation",
+      "ai"
+    ],
+    "license": "MIT",
+    "targetAttribute": "_aichat"
+  }
