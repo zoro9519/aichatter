@@ -1,6 +1,6 @@
-# Adapt OpenAI Extension
+# Adapt AI Chat Extension
 
-This Adapt extension allows integration with OpenAI's conversational AI API to enable interactive conversations within your Adapt courses. Note that you can use it with any Chat AI that implements the OpenAI conversation API.
+An adapt extension that renders a chatbot sytle window on top of a content object via which a user can converse with an AI Tutor.
 
 ## Requirements
 
