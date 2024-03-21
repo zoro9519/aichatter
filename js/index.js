@@ -6,45 +6,31 @@ import data from 'core/js/data';
 class AIChat extends Backbone.Controller {
     initialize() {
         this.listenTo(Adapt, 'pageView:postReady', this.onRender);
+        this.listenTo(Adapt, 'openai:ready', this.render);
         this.listenTo(Adapt, 'aiChat:newMessage', this.handleSubmit);
-        //const AIChatModel = new AIChatModel(parentModel.get('_tutor'), parentModel);
-        //const model = new AIChatModel();
         this.model = new AIChatModel();
     }
 
     onRender(view) {
         const model = view.model;
-        if (!this.checkIsEnabled(model)) {
-            return;
-        }
-
-        this.addAIChatView(model,view);
-        this.addBlockListener();
-        this.prepareAI();
-        this.checkServer();
-
+        this.parentModel = view.model;
+        this.parentView = view;
     }
 
-    checkServer() {
-        fetch('https://lms.learndata.info/api/contentObject/608686c6d0a9ce7fbf3a2e2b', {
-            method: 'GET'
-        })
-        .then(response => {
-            if (response.status === 200) {
-                console.log("Server connected");
-            } else {
-                console.log(`Error: Status code ${response.status}`);
-            }
-        })
-        .catch(error => {
-            console.log('Error:', error);
-        });
+    render() {
+        if (!this.checkIsEnabled(this.parentModel)) {
+            return;
+        }
+        this.addAIChatView(this.parentModel,this.parentView);
+        this.addBlockListener();
+        this.prepareAI();
     }
 
     prepareAI() {
-        const conversation =  Adapt.openaiodi.createConversation();
+        const openaiodi = Adapt.openaiodi;
+
+        const conversation = openaiodi.createConversation();
         this.model.set('conversation', conversation);
-        //conversation.addMessage({ role: 'system', content: '' });
     }
 
     addBlockListener() {
