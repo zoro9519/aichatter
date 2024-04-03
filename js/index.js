@@ -28,8 +28,7 @@ class AIChat extends Backbone.Controller {
 
     prepareAI() {
         const openaiodi = Adapt.openaiodi;
-
-        const conversation = openaiodi.createConversation();
+        const conversation = openaiodi.createConversation(this.parentModel.get('_id'));
         this.model.set('conversation', conversation);
     }
 
@@ -45,7 +44,11 @@ class AIChat extends Backbone.Controller {
                 if (entry.isIntersecting) {
                     const adaptId = entry.target.getAttribute('data-adapt-id');
                     const model = data.findById(adaptId);
-                    console.log('Block in view: ', this.getDisplayTitle(model));
+                    const block = {};
+                    block.id = adaptId;
+                    block.title = this.getDisplayTitle(model);
+                    this.model.set('currentBlock',block);
+                    console.log('Block in view: ', block.title);
                     console.log(this.getBodyText(model));
                 }
             });
@@ -151,6 +154,9 @@ class AIChat extends Backbone.Controller {
 
     async handleSubmit(message) {
         const conversation =  this.model.get('conversation');
+        if (this.model.get('currentBlock')) {
+            conversation.setCurrentBlock(this.model.get('currentBlock'));
+        }
         conversation.addMessage({ role: 'user', content: message })
         const assistantReply = await conversation.getResponse();
         conversation.addMessage({ role: 'system', content: assistantReply })

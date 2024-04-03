@@ -26,7 +26,7 @@ export default function AiChat(props) {
   };
 
   const TypingAnimation = () => (
-    <li class="system">
+    <li class="assistant">
       <div className="typing-animation">
         {[...Array(3)].map((_, index) => (
           <span key={index} className="dot"></span>
@@ -37,7 +37,7 @@ export default function AiChat(props) {
 
   setInterval(()=> {
     const length = chatMessages.length;
-    if (chatMessages[length-1]?.type === "system") {
+    if (chatMessages[length-1]?.type === "assistant") {
       setLoading(false)
     }
   }, 100);

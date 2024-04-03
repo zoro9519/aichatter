@@ -46,7 +46,7 @@ class AIChatView extends Backbone.View {
 
   handleResponse(message) {
     // Add the AI's response to the chat messages collection
-    this.chatMessages.add({ message, type: 'system', rendered: false });
+    this.chatMessages.add({ message, type: 'assistant', rendered: false });
     console.log(this.chatMessages.toJSON());
     this.render();
   }
