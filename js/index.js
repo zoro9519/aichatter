@@ -6,32 +6,90 @@ import data from 'core/js/data';
 class AIChat extends Backbone.Controller {
     initialize() {
         this.listenTo(Adapt, 'pageView:postReady', this.onRender);
-        this.listenTo(Adapt, 'openai:ready', this.render);
+        this.listenTo(Adapt, 'openai:ready', this.setup);
+        this.listenTo(Adapt, 'openai:conversationsUpdated', this.updateConversations);
         this.listenTo(Adapt, 'aiChat:newMessage', this.handleSubmit);
+        this.listenTo(Adapt, 'aiChat:newConversation', this.newConversation);
+        this.listenTo(Adapt, 'aiChat:loadConversation', this.loadConversation);
         this.model = new AIChatModel();
     }
 
+    // Function to check we are enabled
+    checkIsEnabled(model) {
+        const _model = model.get('_aichat');
+        if (!_model || !_model._isEnabled) return false;
+        return true;
+    }
+
+    // Function to get the location we are rendering the extension on
     onRender(view) {
         const model = view.model;
         this.parentModel = view.model;
         this.parentView = view;
     }
 
-    render() {
+    // Function to get a blank conversation and call addChatView the chat box and get a blank conversation
+    setup() {
         if (!this.checkIsEnabled(this.parentModel)) {
             return;
         }
+
+        // Setup the view and render it
         this.addAIChatView(this.parentModel,this.parentView);
-        this.addBlockListener();
-        this.prepareAI();
-    }
 
-    prepareAI() {
+        // Get a new conversation
         const openaiodi = Adapt.openaiodi;
-        const conversation = openaiodi.createConversation(this.parentModel.get('_id'));
+        const conversation = openaiodi.createConversation();
+        conversation.setMetadata(this.parentModel.get('_id'));
         this.model.set('conversation', conversation);
+
+        // Call plugin to get all Conversations, handled on trigger later
+        openaiodi.retrieveConversations(this.parentModel.get('_id'));
+
+        // Add the block listener
+        this.addBlockListener();
     }
 
+    //initialise the view
+    addAIChatView(model,view) {
+        //const aiChatModel = model.get('_aichat');
+        const aiChatView = new AIChatView({ model });
+        view.$el.append(aiChatView.el);
+        view.$el.addClass('has-aiChat');
+    }
+
+    // Create a new conversation
+    newConversation() {
+        const openaiodi = Adapt.openaiodi;
+        const conversation = openaiodi.createConversation();
+        conversation.setMetadata(this.parentModel.get('_id'));
+        this.model.set('conversation', conversation);
+        Adapt.trigger('aiChat:conversationLoaded', conversation);
+    }
+
+    // Load an existing conversation
+    loadConversation(conversationId) {
+        const openaiodi = Adapt.openaiodi;
+        const conversation = openaiodi.getConversation(conversationId);
+        this.model.set('conversation', conversation);
+        Adapt.trigger('aiChat:conversationLoaded', conversation);
+    }
+
+    // Handle a message submission and set the block the submission came from
+    async handleSubmit(message) {
+        const conversation =  this.model.get('conversation');
+        if (this.model.get('currentBlock')) {
+            conversation.setCurrentBlock(this.model.get('currentBlock'));
+        }
+        conversation.addMessage({ role: 'user', content: message })
+        const assistantReply = await conversation.getResponse();
+        conversation.addMessage({ role: 'system', content: assistantReply })
+        Adapt.trigger('aiChat:response',assistantReply);
+    }
+
+    /*
+     * Functions that detect where we are in the contentObject
+     */
     addBlockListener() {
         const blocks = document.querySelectorAll('.block');
         const options = {
@@ -145,31 +203,6 @@ class AIChat extends Backbone.Controller {
 
         return text;
     }
-
-    checkIsEnabled(model) {
-        const _model = model.get('_aichat');
-        if (!_model || !_model._isEnabled) return false;
-        return true;
-    }
-
-    async handleSubmit(message) {
-        const conversation =  this.model.get('conversation');
-        if (this.model.get('currentBlock')) {
-            conversation.setCurrentBlock(this.model.get('currentBlock'));
-        }
-        conversation.addMessage({ role: 'user', content: message })
-        const assistantReply = await conversation.getResponse();
-        conversation.addMessage({ role: 'system', content: assistantReply })
-        Adapt.trigger('aiChat:response',assistantReply);
-    }
-
-    addAIChatView(model,view) {
-        const aiChatModel = model.get('_aichat');
-        const aiChatView = new AIChatView({ model });
-        view.$el.append(aiChatView.el);
-        view.$el.addClass('has-aiChat');
-    }
-
 }
 
 Adapt.aichat = new AIChat();

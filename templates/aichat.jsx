@@ -4,8 +4,11 @@ import { templates } from 'core/js/reactHelpers';
 
 export default function AiChat(props) {
   const {
+    conversations,
     chatMessages,
     handleSubmit,
+    newConversation,
+    loadConversation,
     openChatText,
     displayTitle,
     body: initialBody,
@@ -13,6 +16,7 @@ export default function AiChat(props) {
   } = props;
 
   const [chatOpen, setChatOpen] = useState(false);
+  const [expanded, setExpanded] = useState(false);
   const [loading, setLoading] = useState(false);
   const inputRef = useRef(null);
 
@@ -23,6 +27,10 @@ export default function AiChat(props) {
 
   const closeForm = () => {
     setChatOpen(false);
+  };
+
+  const expandBox = () => {
+    setExpanded(!expanded);
   };
 
   const TypingAnimation = () => (
@@ -47,7 +55,6 @@ export default function AiChat(props) {
     setLoading(true);
     setSendButtonState(true);
     const message = inputRef.current.value;
-    console.log(chatMessages);
     chatMessages.push({ message, type: 'user', rendered: true });
 
     inputRef.current.value = '';
@@ -117,13 +124,34 @@ export default function AiChat(props) {
     <div className="aichat">
       <link rel="stylesheet" href="https://unicons.iconscout.com/release/v4.0.0/css/line.css"></link>
       {!chatOpen && <button className="openAIChat" onClick={openForm}>{openChatText}</button>}
-      <div className={`aichat__box ${chatOpen ? 'show' : 'hide'}`}>
+      <div className={`aichat__box ${chatOpen ? 'show' : 'hide'} ${expanded ? 'expanded' : ''}`}>
+      <button className="expandButton" onClick={expandBox}>&#10070;</button>
       <button className="closeButton" onClick={closeForm}>&#10006;</button>
         <form onSubmit={handleFormSubmit}>
           <main>
             <div className="topper">
               <div className="icon"></div>
               <div className="name">{displayTitle}</div>
+            </div>
+            <div className={`conversations ${expanded ? 'expanded' : ''}`}>
+              <h2>Conversations</h2>
+              <ul className="new">
+                <li className="conversation" onClick={() => newConversation()}>
+                  New conversation
+                </li>
+              </ul>
+              <h3>From this module</h3>
+              <ul className="thisModule">
+              {conversations.map((conversation, index) => (
+                <li key={index} className="conversation" onClick={() => loadConversation(conversation.id)}>
+                  {conversation.title}
+                </li>
+              ))}
+              </ul>
+              <h3>From related course</h3>
+              <div className="thisCourse">
+
+              </div>
             </div>
             <div className="msgs_cont">
               <ul id="list_cont">

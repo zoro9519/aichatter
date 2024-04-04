@@ -4,13 +4,63 @@
    position: fixed;
    bottom: 23px;
    right: 28px;
-   width: 420px;
+   z-index: 1000;
+   //width: calc(100vw - 56px);
    &__box {
+      transition: width 0.3s ease, height 0.3s ease;
+      min-width: 420px;
       &.hide {
          display: none;
       }
       &.show {
          display: block;
+      }
+      &.expanded {
+         width: calc(100vw - 56px);
+         .msgs_cont {
+            height: 87vh;
+            width: calc(100vw - 56px - 204px);
+            float: right;
+         }
+         .bottom {
+            max-width: calc(100% - 200px);
+         }
+      }
+   }
+   .conversations {
+      display: none;
+      width: 200px;
+      float: left;
+      width: 200px;
+      height: 87vh;
+      padding: 10px;
+      border-right: 1px solid gray;
+      overflow: auto;
+      color: #ccc;
+      &.expanded {
+         display: inline;
+      }
+      h2, h3 {
+         padding: 0px;
+         margin: 10px 0px;
+      }
+      h2 {
+         font-size: 1em;
+      }
+      h3 {
+         font-size: 0.8em;
+         font-weight: normal;
+      }
+      ul {
+         margin: 0;
+         padding-left: 10px;
+         font-size: 0.8em;
+      }
+      li {
+         list-style: none;
+         line-height: 32px;
+         text-decoration: underline;
+         cursor: pointer;
       }
    }
    .openAIChat {
@@ -39,6 +89,21 @@
       position: absolute;
       top: 0px;
       right: 0px;
+      width: 35px;
+      height: 35px;
+      background-color: transparent;
+      color: white;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+      font-size: 1.5em;
+      z-index: 9999; // Ensure it's above other content
+   }
+   .expandButton {
+      position: absolute;
+      top: 0px;
+      right: 40px;
       width: 35px;
       height: 35px;
       background-color: transparent;
@@ -99,7 +164,9 @@
       padding: 10px;
       display: flex;
       align-items: center;
-      justify-content: center
+      justify-content: center;
+      position: absolute;
+      max-height: 100px;
    }
 
    main .bottom #input {
@@ -148,14 +215,14 @@
 
    main .msgs_cont {
       width: 100%;
-      max-height: calc(100vh - 300px);
+      max-height: 87vh;
       min-height: 200px;
       overflow: auto;
       padding: 10px;
-      padding-bottom: 15px;
+      padding-bottom: 100px;
       scroll-behavior: smooth;
-      color: #fff;
       color: #f2f2f2;
+      transition: height 0.3s ease;
    }
 
    main > .msgs_cont > ul {
