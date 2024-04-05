@@ -11,6 +11,7 @@ class AIChat extends Backbone.Controller {
         this.listenTo(Adapt, 'aiChat:newMessage', this.handleSubmit);
         this.listenTo(Adapt, 'aiChat:newConversation', this.newConversation);
         this.listenTo(Adapt, 'aiChat:loadConversation', this.loadConversation);
+        this.listenTo(Adapt, 'aiChat:newRating', this.setRating);
         this.model = new AIChatModel();
     }
 
@@ -41,6 +42,7 @@ class AIChat extends Backbone.Controller {
         const openaiodi = Adapt.openaiodi;
         const conversation = openaiodi.createConversation();
         conversation.setMetadata(this.parentModel.get('_id'));
+        conversation.set('plugin','aiChat');
         this.model.set('conversation', conversation);
 
         // Call plugin to get all Conversations, handled on trigger later
@@ -63,6 +65,7 @@ class AIChat extends Backbone.Controller {
         const openaiodi = Adapt.openaiodi;
         const conversation = openaiodi.createConversation();
         conversation.setMetadata(this.parentModel.get('_id'));
+        conversation.set('plugin','aiChat');
         this.model.set('conversation', conversation);
         Adapt.trigger('aiChat:conversationLoaded', conversation);
     }
@@ -85,6 +88,12 @@ class AIChat extends Backbone.Controller {
         const assistantReply = await conversation.getResponse();
         conversation.addMessage({ role: 'system', content: assistantReply })
         Adapt.trigger('aiChat:response',assistantReply);
+    }
+
+    // Method to send the rating to the server.
+    setRating(messageId,rating) {
+        const conversation =  this.model.get('conversation');
+        conversation.setRating(messageId,rating);
     }
 
     /*

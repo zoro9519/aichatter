@@ -6,7 +6,6 @@ export default function AiChat(props) {
   const {
     conversations,
     chatMessages,
-    handleSubmit,
     newConversation,
     loadConversation,
     openChatText,
@@ -102,6 +101,89 @@ export default function AiChat(props) {
     );
   };
 
+  /*
+   * Rating system
+   */
+  const [activeMessageId, setActiveMessageId] = useState(null);
+  const [showTextBox, setShowTextBox] = useState(false);
+
+  const handleMoreOptionClick = (messageId) => {
+    setActiveMessageId(messageId); // Set the active message ID to the clicked message ID
+    setShowTextBox(true); // Show the text box for the clicked message
+  };
+
+  // Need to move this somewhere.
+  const defaultRatingResponses = {
+    1: [
+        "Don't like the style",
+        "Not factually correct",
+        "Didn't fully follow instructions",
+        "Refused when it shouldn't have",
+        "Being lazy"
+    ],
+    2: [
+        "Not helpful",
+        "Confusing response",
+        "Didn't provide enough detail",
+        "Could be improved",
+        "Incomplete information"
+    ],
+    3: [
+        "Somewhat helpful",
+        "Partially correct",
+        "Room for improvement",
+        "Average response",
+        "Needs more detail"
+    ],
+    4: [
+        "Quite helpful",
+        "Mostly correct",
+        "Good response",
+        "Well-written",
+        "Informative"
+    ],
+    5: [
+        "Very helpful",
+        "Completely correct",
+        "Excellent response",
+        "Clear and concise",
+        "Highly informative"
+    ]
+  };
+
+  // Show star ratings on hover
+  const handleRatingHover = (messageId, rating) => {
+    // Get the message container element by its ID
+    const messageContainer = document.getElementById(messageId);
+    if (!messageContainer) return; // Exit if message container not found
+
+    // Get all star elements within the message container
+    const stars = messageContainer.querySelectorAll('.star');
+    stars.forEach((star, index) => {
+        if (index < rating) {
+            star.innerHTML = '★ '; // Fill in star to indicate selection
+        } else {
+            star.innerHTML = '☆ '; // Reset star to empty
+        }
+    });
+  }
+
+  // Get the rating comment and call the super method to handle it
+  const submitRatingResponse = (messageId, option = null) => {
+    let response;
+    if (!option) {
+        // If no option is selected, get the value from the textarea associated with the messageId
+        const textarea = document.querySelector(`.rating-comment textarea[data-message-id="${messageId}"]`);
+        response = textarea.value;
+    } else {
+        response = option;
+    }
+    setActiveMessageId(null); // Set the active message ID to the clicked message ID
+    setShowTextBox(false);
+    // Call the props function to submit the rating response
+    props.handleRatingComment(messageId, response);
+  };
+
   useEffect(() => {
     // Update the send button background color based on input text length
     const inputtxt = inputRef.current;
@@ -156,13 +238,68 @@ export default function AiChat(props) {
             <div className="msgs_cont">
               <ul id="list_cont">
                 {chatMessages.map((message, index) => (
-                  <li key={index} className={message.type}>
-                    {message.rendered ? (
-                      <ReactMarkdown>{message.message}</ReactMarkdown>
-                    ) : (
-                      <RenderWordByWord message={message.message} index={index} />
-                    )}
-                  </li>
+                    <li key={index} id={message.id} className={message.type}>
+                        {message.rendered ? (
+                            <ReactMarkdown>{message.message}</ReactMarkdown>
+                        ) : (
+                            <RenderWordByWord message={message.message} index={index} />
+                        )}
+                        {message.type === 'assistant' && message.rating && message.id && (
+                            <div className="rating-container">
+                                <div className="stars">
+                                    {Array.from({ length: message.rating.rating }, (_, i) => (
+                                        <span key={i} className="star">&#9733; </span> // Unicode for filled star symbol
+                                    ))}
+                                    {Array.from({ length: 5 - message.rating.rating }, (_, i) => (
+                                        <span key={i + message.rating.rating} className="star">&#9734; </span> // Unicode for empty star symbol
+                                    ))}
+                                </div>
+                                {message.showRatingOptions && !showTextBox && (
+                                  <div className="rating-comment-container">
+                                    <b>Tell us more:</b><br/>
+                                    <div className="rating-options">
+                                      {/* Render default rating options */}
+                                      {defaultRatingResponses[message.rating.rating].map((option, index) => (
+                                          <div key={index} className="rating-option" onClick={() => submitRatingResponse(message.id, option)}>
+                                              {option}
+                                          </div>
+                                      ))}
+                                      {/* Render "More" option */}
+                                      <div className="rating-option" onClick={() => handleMoreOptionClick(message.id)}>
+                                          More
+                                      </div>
+                                    </div>
+                                  </div>
+                                )}
+                                {/* Render text box and submit button */}
+                                {showTextBox && message.id === activeMessageId && (
+                                  <div className="rating-comment-container">
+                                  <b>Tell us more:</b><br/>
+                                    <div className="rating-comment">
+                                      <textarea data-message-id={message.id} placeholder="Enter your response"/>
+                                      <button onClick={() => submitRatingResponse(message.id)}>Submit</button>
+                                    </div>
+                                  </div>
+                                )}
+                            </div>
+                        )}
+                        {message.type === 'assistant' && message.id && !message.rating && (
+                          <div className="rating-container">
+                              <div className="stars">
+                                Rate?:&nbsp;
+                                {Array.from({ length: 5 }, (_, i) => (
+                                    <span
+                                        key={i}
+                                        className="star"
+                                        onMouseEnter={() => handleRatingHover(message.id,i + 1)}
+                                        onMouseLeave={() => handleRatingHover(message.id,0)}
+                                        onClick={() => props.handleRating(message.id, i + 1)}
+                                    >☆ </span>
+                                ))}
+                              </div>
+                          </div>
+                      )}
+                    </li>
                 ))}
                 {loading && <TypingAnimation />}
               </ul>

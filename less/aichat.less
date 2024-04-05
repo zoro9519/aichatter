@@ -256,6 +256,49 @@
       background: linear-gradient(to top right, #2a569d, #0a6e55);
       padding-left: 12px;
       border-bottom-left-radius: 20px;
+      min-width: 240px;
+      .rating-container {
+         margin-top: 10px;
+         .stars {
+            text-align: right;
+            .star {
+               cursor: pointer;
+            }
+         }
+         .rating-comment-container {
+            border: 1px solid;
+            border-radius: 10px;
+            padding: 10px;
+            margin-top: 10px;
+            font-size: 0.9em;
+            .rating-option {
+               display: inline-block;
+               margin: 5px;
+               border: 1px solid gray;
+               padding: 5px;
+               border-radius: 5px;
+               cursor: pointer;
+            }
+            .rating-comment {
+               text-align: right;
+            }
+            textarea {
+               width: 100%;
+               background: inherit;
+               color: inherit;
+               box-shadow: none;
+               border: 1px solid;
+               padding: 10px;
+               margin-top: 10px;
+               margin-bottom: 10px;
+               min-width: 320px;
+               min-height: 120px;
+            }
+            button {
+               padding: 10px;
+            }
+         }
+      }
    }
 
    button.uil {

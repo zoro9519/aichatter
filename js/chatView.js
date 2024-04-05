@@ -10,7 +10,7 @@ class AIChatView extends Backbone.View {
     this.conversations = new Backbone.Collection();
 
     // Bind the context for event listeners
-    _.bindAll(this, 'handleResponse', 'handleSubmit');
+    _.bindAll(this, 'handleResponse', 'handleSubmit', 'handleRating', 'handleRatingComment');
 
     // Listen to events triggered by Adapt
     this.listenTo(Adapt, 'aiChat:response', this.handleResponse);
@@ -30,6 +30,8 @@ class AIChatView extends Backbone.View {
       handleSubmit: this.handleSubmit,
       newConversation: this.newConversation,
       loadConversation: this.loadConversation,
+      handleRating: this.handleRating,
+      handleRatingComment: this.handleRatingComment,
       openChatText: 'Open AI Assistant',
       displayTitle: 'AI Assistant Tutor',
       body: '',
@@ -51,10 +53,44 @@ class AIChatView extends Backbone.View {
     Adapt.trigger('aiChat:newMessage', message);
   }
 
+  // Update a message to including star rating and trigger an event to update this in the conversation on the server
+  handleRating(messageId, starRating) {
+    // Create the rating object
+    const rating = {
+        rating: starRating
+    };
+
+    this.chatMessages.each(message => {
+      if (message.get('id') == messageId) {
+        message.set('rating', rating);
+        message.set('showRatingOptions', true);
+      }
+    });
+
+    Adapt.trigger('aiChat:newRating', messageId, rating);
+    this.render();
+  }
+
+  // Update a rating with a comment and sync this with the server via trigger
+  handleRatingComment(messageId, comment) {
+    this.chatMessages.each(message => {
+      if (message.get('id') == messageId) {
+        console.log(message);
+        const rating = message.get('rating');
+        rating.comment = comment;
+        message.set('rating',rating);
+        message.set('showRatingOptions', false);
+        Adapt.trigger('aiChat:newRating', messageId, rating);
+      }
+    });
+
+    this.render();
+  }
+
   // Triggered when the AI has responsed and we call render to render the updated conversaion.
   handleResponse(message) {
     // Add the AI's response to the chat messages collection
-    this.chatMessages.add({ message, type: 'assistant', rendered: false });
+    this.chatMessages.add({ message: message.content, type: 'assistant', id: message.id, rating: null, rendered: false });
     this.render();
   }
 
@@ -84,10 +120,10 @@ class AIChatView extends Backbone.View {
   conversationLoaded(conversation) {
     // Remove all messages from this.chatMessages
     this.chatMessages.reset();
-
+    console.log(conversation);
     // Iterate over the conversation and add all the messages to chatMessages
-    conversation.messages.forEach(({ content, role }) => {
-        this.chatMessages.add({ message: content, type: role, rendered: true });
+    conversation.messages.forEach(({ content, role, _id, rating }) => {
+        this.chatMessages.add({ message: content, type: role, id: _id, rating: rating, rendered: true });
     });
 
     // Render the updated chatMessages

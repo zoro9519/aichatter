@@ -39,7 +39,7 @@ Alternatively, you can configure the extension directly in your course's `conten
 
 ## Usage
 
-Once the extension is installed and configured, it will appear withing contentObjects when rendered.
+Once the extension is installed and configured, it will appear when contentObjects are rendered.
 
 ## License
 
