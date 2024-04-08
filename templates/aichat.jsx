@@ -104,12 +104,15 @@ export default function AiChat(props) {
   /*
    * Rating system
    */
-  const [activeMessageId, setActiveMessageId] = useState(null);
-  const [showTextBox, setShowTextBox] = useState(false);
+  const [showTextBox, setShowTextBox] = useState([]);
 
   const handleMoreOptionClick = (messageId) => {
-    setActiveMessageId(messageId); // Set the active message ID to the clicked message ID
-    setShowTextBox(true); // Show the text box for the clicked message
+    // Toggle the message ID in the array
+    setShowTextBox((prevShowTextBox) =>
+      prevShowTextBox.includes(messageId)
+        ? prevShowTextBox.filter((id) => id !== messageId)
+        : [...prevShowTextBox, messageId]
+    );
   };
 
   // Need to move this somewhere.
@@ -178,10 +181,14 @@ export default function AiChat(props) {
     } else {
         response = option;
     }
-    setActiveMessageId(null); // Set the active message ID to the clicked message ID
-    setShowTextBox(false);
+    setShowTextBox(prev => prev.filter(id => id !== messageId));
     // Call the props function to submit the rating response
     props.handleRatingComment(messageId, response);
+  };
+
+  const handleCloseClick = (messageId) => {
+    setShowTextBox(prev => prev.filter(id => id !== messageId));
+    props.handleRatingComment(messageId,"");
   };
 
   useEffect(() => {
@@ -195,18 +202,21 @@ export default function AiChat(props) {
         sendbtn.style.background = "transparent";
       }
     });
-
     return () => {
       // Clean up event listener when the component unmounts
       inputtxt.removeEventListener("input");
     };
   }, []);
 
+  useEffect(() => {
+    scrollToBottom(); // Call scrollToBottom function
+  }, [chatMessages]); // chatMessages as a dependency
+
   return (
-    <div className="aichat">
+    <div className={`aichat ${expanded ? 'expanded' : ''}`}>
       <link rel="stylesheet" href="https://unicons.iconscout.com/release/v4.0.0/css/line.css"></link>
       {!chatOpen && <button className="openAIChat" onClick={openForm}>{openChatText}</button>}
-      <div className={`aichat__box ${chatOpen ? 'show' : 'hide'} ${expanded ? 'expanded' : ''}`}>
+      <div className={`aichat__box ${chatOpen ? 'show' : 'hide'}`}>
       <button className="expandButton" onClick={expandBox}>&#10070;</button>
       <button className="closeButton" onClick={closeForm}>&#10006;</button>
         <form onSubmit={handleFormSubmit}>
@@ -254,8 +264,9 @@ export default function AiChat(props) {
                                         <span key={i + message.rating.rating} className="star">&#9734; </span> // Unicode for empty star symbol
                                     ))}
                                 </div>
-                                {message.showRatingOptions && !showTextBox && (
+                                {message.showRatingOptions && !showTextBox.includes(message.id) && (
                                   <div className="rating-comment-container">
+                                    <button class="closeButton" onClick={() => handleCloseClick(message.id)}>&#10006;</button>
                                     <b>Tell us more:</b><br/>
                                     <div className="rating-options">
                                       {/* Render default rating options */}
@@ -272,8 +283,9 @@ export default function AiChat(props) {
                                   </div>
                                 )}
                                 {/* Render text box and submit button */}
-                                {showTextBox && message.id === activeMessageId && (
+                                {showTextBox.includes(message.id) && (
                                   <div className="rating-comment-container">
+                                  <button class="closeButton" onClick={() => handleCloseClick(message.id)}>&#10006;</button>
                                   <b>Tell us more:</b><br/>
                                     <div className="rating-comment">
                                       <textarea data-message-id={message.id} placeholder="Enter your response"/>

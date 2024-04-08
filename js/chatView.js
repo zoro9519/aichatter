@@ -75,12 +75,14 @@ class AIChatView extends Backbone.View {
   handleRatingComment(messageId, comment) {
     this.chatMessages.each(message => {
       if (message.get('id') == messageId) {
-        console.log(message);
-        const rating = message.get('rating');
-        rating.comment = comment;
-        message.set('rating',rating);
         message.set('showRatingOptions', false);
-        Adapt.trigger('aiChat:newRating', messageId, rating);
+        if (comment != "") {
+          const rating = message.get('rating');
+          rating.comment = comment;
+          message.set('rating',rating);
+          message.set('showRatingOptions', false);
+          Adapt.trigger('aiChat:newRating', messageId, rating);
+        }
       }
     });
 
