@@ -64,6 +64,7 @@ class AIChatView extends Backbone.View {
       if (message.get('id') == messageId) {
         message.set('rating', rating);
         message.set('showRatingOptions', true);
+        message.set('rendered', true);
       }
     });
 
@@ -122,7 +123,6 @@ class AIChatView extends Backbone.View {
   conversationLoaded(conversation) {
     // Remove all messages from this.chatMessages
     this.chatMessages.reset();
-    console.log(conversation);
     // Iterate over the conversation and add all the messages to chatMessages
     conversation.messages.forEach(({ content, role, _id, rating }) => {
         this.chatMessages.add({ message: content, type: role, id: _id, rating: rating, rendered: true });

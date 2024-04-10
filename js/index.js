@@ -86,7 +86,7 @@ class AIChat extends Backbone.Controller {
         }
         conversation.addMessage({ role: 'user', content: message })
         const assistantReply = await conversation.getResponse();
-        conversation.addMessage({ role: 'system', content: assistantReply })
+        conversation.addMessage({ role: 'assistant', content: assistantReply.content })
         Adapt.trigger('aiChat:response',assistantReply);
     }
 
